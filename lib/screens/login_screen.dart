@@ -22,7 +22,11 @@ class LoginScreen extends StatelessWidget {
               children: <Widget>[
                 LogoWidget(labelText: 'Messenger'),
                 _FormWidget(),
-                LabelsWidget(),
+                LabelsWidget(
+                  labelMessage: '¿No tienes cuenta?',
+                  labelPath: 'Crea una ahora!',
+                  path: 'register',
+                ),
                 Text(
                   'Términos y condiciones de uso',
                   style: TextStyle(fontWeight: FontWeight.w200),
@@ -47,8 +51,6 @@ class __FormWidgetState extends State<_FormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Container(
       margin: EdgeInsets.only(top: 40.0),
       padding: EdgeInsets.symmetric(horizontal: 40.0),
