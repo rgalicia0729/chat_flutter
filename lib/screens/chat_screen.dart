@@ -1,6 +1,31 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class ChatScreen extends StatelessWidget {
+import 'package:chat_flutter/widgets/chat_message_widget.dart';
+
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
+  final _chatMessageController = new TextEditingController();
+  final _focusNode = new FocusNode();
+
+  bool _isWriting = false;
+  List<ChatMessageWidget> _messages = [];
+
+  @override
+  void dispose() {
+    for (ChatMessageWidget chatMessage in _messages) {
+      chatMessage.animationController.dispose();
+    }
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,17 +55,95 @@ class ChatScreen extends StatelessWidget {
               child: ListView.builder(
                 physics: BouncingScrollPhysics(),
                 reverse: true,
-                itemBuilder: (_, index) => Text('$index'),
+                itemCount: _messages.length,
+                itemBuilder: (_, index) => _messages[index],
               ),
             ),
-            Divider(thickness: 1.0),
+            Divider(height: 1.0),
             Container(
-              height: 100,
               color: Colors.white,
+              child: _chatMessage(),
             )
           ],
         ),
       ),
     );
+  }
+
+  Widget _chatMessage() {
+    return SafeArea(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 8.0),
+        child: Row(
+          children: <Widget>[
+            Flexible(
+              child: TextField(
+                controller: _chatMessageController,
+                focusNode: _focusNode,
+                onSubmitted: _handleSubmit,
+                onChanged: (String value) {
+                  setState(() {
+                    (value.trim().length > 0)
+                        ? _isWriting = true
+                        : _isWriting = false;
+                  });
+                },
+                decoration: InputDecoration.collapsed(
+                  hintText: 'Enviar mensaje',
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 4.0),
+              child: Platform.isIOS
+                  ? CupertinoButton(
+                      child: Text('Enviar'),
+                      onPressed: _isWriting
+                          ? () =>
+                              _handleSubmit(_chatMessageController.text.trim())
+                          : null,
+                    )
+                  : Container(
+                      margin: EdgeInsets.symmetric(horizontal: 4.0),
+                      child: IconTheme(
+                        data: IconThemeData(color: Colors.blue[400]),
+                        child: IconButton(
+                          highlightColor: Colors.transparent,
+                          splashColor: Colors.transparent,
+                          icon: Icon(Icons.send),
+                          onPressed: _isWriting
+                              ? () => _handleSubmit(
+                                  _chatMessageController.text.trim())
+                              : null,
+                        ),
+                      ),
+                    ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleSubmit(String value) {
+    if (value.length == 0) return;
+
+    final newMessage = new ChatMessageWidget(
+      uid: '123',
+      text: value,
+      animationController: AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 400),
+      ),
+    );
+    _messages.insert(0, newMessage);
+    newMessage.animationController.forward();
+
+    _chatMessageController.clear();
+    _focusNode.requestFocus();
+
+    setState(() {
+      _isWriting = false;
+    });
   }
 }
