@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'package:chat_flutter/widgets/show_alert_widget.dart';
 import 'package:chat_flutter/widgets/labels_widget.dart';
 import 'package:chat_flutter/widgets/text_field_widget.dart';
 import 'package:chat_flutter/widgets/logo_widget.dart';
 import 'package:chat_flutter/widgets/elevated_button_widget.dart';
+import 'package:chat_flutter/services/auth_service.dart';
 
 class LoginScreen extends StatelessWidget {
   @override
@@ -51,6 +54,8 @@ class __FormWidgetState extends State<_FormWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
     return Container(
       margin: EdgeInsets.only(top: 40.0),
       padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -72,10 +77,27 @@ class __FormWidgetState extends State<_FormWidget> {
           SizedBox(height: 20.0),
           ElevatedButtonWidget(
             labelText: 'Ingresar',
-            onPressed: () {
-              print(emailController.text);
-              print(passwordController.text);
-            },
+            onPressed: authService.authenticating
+                ? null
+                : () async {
+                    // Quital el focus y ocultar el teclado
+                    FocusScope.of(context).unfocus();
+
+                    final loginResult = await authService.login(
+                      emailController.text.trim(),
+                      passwordController.text.trim(),
+                    );
+
+                    if (loginResult) {
+                      // TODO: agregar acciones cuando el login sea correcto
+                    } else {
+                      showAlert(
+                        context: context,
+                        title: 'Login Incorrecto',
+                        content: 'Revise sus credenciales nuevamente',
+                      );
+                    }
+                  },
           )
         ],
       ),

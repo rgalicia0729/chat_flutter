@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import 'package:chat_flutter/models/usuario_model.dart';
+import 'package:chat_flutter/models/auth_model.dart';
 
 // ignore: must_be_immutable
 class UsuariosScreen extends StatelessWidget {
   RefreshController _refreshController =
       new RefreshController(initialRefresh: false);
 
-  List<UsuarioModel> usuarios = [
-    UsuarioModel(
-        uid: '1', nombre: 'Melissa', email: 'test1@test.com', online: true),
-    UsuarioModel(
-        uid: '2', nombre: 'Felipe', email: 'test2@test.com', online: false),
-    UsuarioModel(
-        uid: '3', nombre: 'Santiago', email: 'test3@test.com', online: true),
+  List<Usuario> usuarios = [
+    Usuario(id: '1', name: 'Melissa', email: 'test1@test.com', online: true),
+    Usuario(id: '2', name: 'Felipe', email: 'test2@test.com', online: false),
+    Usuario(id: '3', name: 'Santiago', email: 'test3@test.com', online: true),
   ];
 
   @override
@@ -67,7 +64,7 @@ class UsuariosScreen extends StatelessWidget {
 
 // Usuario list tile widget
 class _UsuarioListTileWidget extends StatelessWidget {
-  final UsuarioModel usuario;
+  final Usuario usuario;
 
   _UsuarioListTileWidget({Key key, this.usuario}) : super(key: key);
 
@@ -75,10 +72,10 @@ class _UsuarioListTileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        child: Text(usuario.nombre.substring(0, 2)),
+        child: Text(usuario.name.substring(0, 2)),
         backgroundColor: Colors.blue[100],
       ),
-      title: Text(usuario.nombre),
+      title: Text(usuario.name),
       subtitle: Text(usuario.email),
       trailing: Container(
         width: 10.0,
