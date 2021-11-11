@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'package:chat_flutter/models/auth_model.dart';
+import 'package:chat_flutter/services/auth_service.dart';
 
 // ignore: must_be_immutable
 class UsuariosScreen extends StatelessWidget {
@@ -16,15 +18,21 @@ class UsuariosScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final usuario = authService.usuario;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 1.0,
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.exit_to_app, color: Colors.black87),
-          onPressed: () {},
+          onPressed: () async {
+            await authService.logout();
+            Navigator.pushReplacementNamed(context, 'login');
+          },
         ),
-        title: Text('Mi Nombre', style: TextStyle(color: Colors.black87)),
+        title: Text(usuario.name, style: TextStyle(color: Colors.black87)),
         actions: <Widget>[
           Container(
             margin: EdgeInsets.only(right: 16.0),

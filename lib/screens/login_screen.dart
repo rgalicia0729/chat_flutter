@@ -83,13 +83,13 @@ class __FormWidgetState extends State<_FormWidget> {
                     // Quital el focus y ocultar el teclado
                     FocusScope.of(context).unfocus();
 
-                    final loginResult = await authService.login(
+                    final loginResult = await authService.signin(
                       emailController.text.trim(),
                       passwordController.text.trim(),
                     );
 
                     if (loginResult) {
-                      // TODO: agregar acciones cuando el login sea correcto
+                      Navigator.pushReplacementNamed(context, 'usuarios');
                     } else {
                       showAlert(
                         context: context,

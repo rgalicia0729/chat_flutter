@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'package:chat_flutter/widgets/show_alert_widget.dart';
 import 'package:chat_flutter/widgets/labels_widget.dart';
 import 'package:chat_flutter/widgets/text_field_widget.dart';
 import 'package:chat_flutter/widgets/logo_widget.dart';
 import 'package:chat_flutter/widgets/elevated_button_widget.dart';
+import 'package:chat_flutter/services/auth_service.dart';
 
 class RegisterScreen extends StatelessWidget {
   @override
@@ -52,6 +55,8 @@ class __FormWidgetState extends State<_FormWidget> {
 
   @override
   Widget build(BuildContext context) {
+    AuthService authService = Provider.of<AuthService>(context);
+
     return Container(
       margin: EdgeInsets.only(top: 40.0),
       padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -80,10 +85,25 @@ class __FormWidgetState extends State<_FormWidget> {
           SizedBox(height: 20.0),
           ElevatedButtonWidget(
             labelText: 'Ingresar',
-            onPressed: () {
-              print(emailController.text);
-              print(passwordController.text);
-            },
+            onPressed: authService.registering
+                ? null
+                : () async {
+                    final registerResult = await authService.signup(
+                      name: nameController.text.trim(),
+                      email: emailController.text.trim(),
+                      password: passwordController.text.trim(),
+                    );
+
+                    if (registerResult) {
+                      Navigator.pushReplacementNamed(context, 'usuarios');
+                    } else {
+                      showAlert(
+                        context: context,
+                        title: 'Registro Incorrecto',
+                        content: 'Por favor revise sus datos nuevamente',
+                      );
+                    }
+                  },
           )
         ],
       ),
