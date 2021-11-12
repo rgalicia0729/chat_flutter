@@ -1,21 +1,30 @@
+import 'package:chat_flutter/services/chat_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import 'package:chat_flutter/models/auth_model.dart';
+import 'package:chat_flutter/models/users_model.dart';
+import 'package:chat_flutter/services/users_service.dart';
 import 'package:chat_flutter/services/auth_service.dart';
 import 'package:chat_flutter/services/socket_service.dart';
 
-// ignore: must_be_immutable
-class UsuariosScreen extends StatelessWidget {
+class UsuariosScreen extends StatefulWidget {
+  @override
+  _UsuariosScreenState createState() => _UsuariosScreenState();
+}
+
+class _UsuariosScreenState extends State<UsuariosScreen> {
   RefreshController _refreshController =
       new RefreshController(initialRefresh: false);
 
-  List<Usuario> usuarios = [
-    Usuario(id: '1', name: 'Melissa', email: 'test1@test.com', online: true),
-    Usuario(id: '2', name: 'Felipe', email: 'test2@test.com', online: false),
-    Usuario(id: '3', name: 'Santiago', email: 'test3@test.com', online: true),
-  ];
+  UsersService usersService = new UsersService();
+  List<Usuario> usuarios = [];
+
+  @override
+  void initState() {
+    _refreshUsuarios();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +78,12 @@ class UsuariosScreen extends StatelessWidget {
   }
 
   _refreshUsuarios() async {
-    await Future.delayed(Duration(milliseconds: 1000));
+    UsersModel usersModel = await usersService.fetchUsers();
+
+    setState(() {
+      usuarios = usersModel.usuarios;
+    });
+
     _refreshController.refreshCompleted();
   }
 }
@@ -97,6 +111,11 @@ class _UsuarioListTileWidget extends StatelessWidget {
           color: usuario.online ? Colors.green : Colors.red,
         ),
       ),
+      onTap: () {
+        final chatService = Provider.of<ChatService>(context, listen: false);
+        chatService.targetUser = usuario;
+        Navigator.pushNamed(context, 'chat');
+      },
     );
   }
 }

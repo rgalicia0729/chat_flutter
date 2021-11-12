@@ -1,8 +1,12 @@
 import 'dart:io';
 
+import 'package:chat_flutter/services/auth_service.dart';
+import 'package:chat_flutter/services/socket_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'package:chat_flutter/services/chat_service.dart';
 import 'package:chat_flutter/widgets/chat_message_widget.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -17,17 +21,55 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   bool _isWriting = false;
   List<ChatMessageWidget> _messages = [];
 
+  ChatService _chatService;
+  SocketService _socketService;
+  AuthService _authService;
+
+  @override
+  void initState() {
+    _chatService = Provider.of<ChatService>(context, listen: false);
+    _socketService = Provider.of<SocketService>(context, listen: false);
+    _authService = Provider.of<AuthService>(context, listen: false);
+
+    _socketService.socket.on(
+      'personal-message',
+      (payload) => _listenToMessages(payload),
+    );
+
+    super.initState();
+  }
+
+  void _listenToMessages(dynamic payload) {
+    ChatMessageWidget chatMessage = new ChatMessageWidget(
+      uid: payload['id'],
+      text: payload['message'],
+      animationController: AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 300),
+      ),
+    );
+
+    setState(() {
+      _messages.insert(0, chatMessage);
+    });
+
+    chatMessage.animationController.forward();
+  }
+
   @override
   void dispose() {
     for (ChatMessageWidget chatMessage in _messages) {
       chatMessage.animationController.dispose();
     }
 
+    _socketService.socket.off('personal-message');
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final targetUser = _chatService.targetUser;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
@@ -36,13 +78,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         title: Column(
           children: <Widget>[
             CircleAvatar(
-              child: Text('MF', style: TextStyle(fontSize: 12.0)),
+              child: Text(
+                targetUser.name.substring(0, 2),
+                style: TextStyle(fontSize: 12.0),
+              ),
               backgroundColor: Colors.blue[100],
               maxRadius: 14.0,
             ),
             SizedBox(height: 3.0),
             Text(
-              'Melissa Flores',
+              targetUser.name,
               style: TextStyle(color: Colors.black87, fontSize: 12.0),
             )
           ],
@@ -129,7 +174,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     if (value.length == 0) return;
 
     final newMessage = new ChatMessageWidget(
-      uid: '123',
+      uid: _authService.usuario.id,
       text: value,
       animationController: AnimationController(
         vsync: this,
@@ -144,6 +189,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     setState(() {
       _isWriting = false;
+    });
+
+    _socketService.socket.emit('personal-message', {
+      'from': _chatService.targetUser.id,
+      'message': value,
     });
   }
 }
