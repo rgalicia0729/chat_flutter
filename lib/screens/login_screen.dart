@@ -6,6 +6,7 @@ import 'package:chat_flutter/widgets/labels_widget.dart';
 import 'package:chat_flutter/widgets/text_field_widget.dart';
 import 'package:chat_flutter/widgets/logo_widget.dart';
 import 'package:chat_flutter/widgets/elevated_button_widget.dart';
+import 'package:chat_flutter/services/socket_service.dart';
 import 'package:chat_flutter/services/auth_service.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -55,6 +56,7 @@ class __FormWidgetState extends State<_FormWidget> {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
+    final socketService = Provider.of<SocketService>(context);
 
     return Container(
       margin: EdgeInsets.only(top: 40.0),
@@ -89,6 +91,7 @@ class __FormWidgetState extends State<_FormWidget> {
                     );
 
                     if (loginResult) {
+                      socketService.connect();
                       Navigator.pushReplacementNamed(context, 'usuarios');
                     } else {
                       showAlert(

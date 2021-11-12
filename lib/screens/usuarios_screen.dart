@@ -4,6 +4,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'package:chat_flutter/models/auth_model.dart';
 import 'package:chat_flutter/services/auth_service.dart';
+import 'package:chat_flutter/services/socket_service.dart';
 
 // ignore: must_be_immutable
 class UsuariosScreen extends StatelessWidget {
@@ -19,6 +20,7 @@ class UsuariosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
+    final socketService = Provider.of<SocketService>(context);
     final usuario = authService.usuario;
 
     return Scaffold(
@@ -28,6 +30,7 @@ class UsuariosScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.exit_to_app, color: Colors.black87),
           onPressed: () async {
+            socketService.disconnect();
             await authService.logout();
             Navigator.pushReplacementNamed(context, 'login');
           },
@@ -36,8 +39,9 @@ class UsuariosScreen extends StatelessWidget {
         actions: <Widget>[
           Container(
             margin: EdgeInsets.only(right: 16.0),
-            child: Icon(Icons.offline_bolt, color: Colors.red),
-            // Icon(Icons.check_circle, color: Colors.green)
+            child: (socketService.serverStatus == ServerStatus.Online)
+                ? Icon(Icons.check_circle, color: Colors.green)
+                : Icon(Icons.offline_bolt, color: Colors.red),
           )
         ],
       ),

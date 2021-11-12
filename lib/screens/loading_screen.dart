@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:chat_flutter/screens/login_screen.dart';
 import 'package:chat_flutter/screens/usuarios_screen.dart';
 import 'package:chat_flutter/services/auth_service.dart';
+import 'package:chat_flutter/services/socket_service.dart';
 
 class LoadingScreen extends StatelessWidget {
   @override
@@ -22,9 +23,11 @@ class LoadingScreen extends StatelessWidget {
 
   Future checkLoginState(BuildContext context) async {
     final authService = Provider.of<AuthService>(context, listen: false);
+    final socketService = Provider.of<SocketService>(context, listen: false);
     final autheticated = await authService.isLoggedIn();
 
     if (autheticated) {
+      socketService.connect();
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
