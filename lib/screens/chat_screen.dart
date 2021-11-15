@@ -1,11 +1,10 @@
 import 'dart:io';
-
-import 'package:chat_flutter/services/auth_service.dart';
-import 'package:chat_flutter/services/socket_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:chat_flutter/services/auth_service.dart';
+import 'package:chat_flutter/services/socket_service.dart';
 import 'package:chat_flutter/services/chat_service.dart';
 import 'package:chat_flutter/widgets/chat_message_widget.dart';
 
@@ -36,6 +35,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       (payload) => _listenToMessages(payload),
     );
 
+    _loadMessageHistory(_chatService.targetUser.id);
+
     super.initState();
   }
 
@@ -54,6 +55,24 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     });
 
     chatMessage.animationController.forward();
+  }
+
+  void _loadMessageHistory(String to) async {
+    final messagesModel = await _chatService.fetchMessages(to);
+
+    final messageHistory = messagesModel.messages.map(
+      (message) => new ChatMessageWidget(
+        uid: message.from,
+        text: message.message,
+        animationController: new AnimationController(
+            vsync: this, duration: Duration(milliseconds: 0))
+          ..forward(),
+      ),
+    );
+
+    setState(() {
+      _messages.insertAll(0, messageHistory);
+    });
   }
 
   @override
@@ -192,7 +211,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     });
 
     _socketService.socket.emit('personal-message', {
-      'from': _chatService.targetUser.id,
+      'to': _chatService.targetUser.id,
       'message': value,
     });
   }
